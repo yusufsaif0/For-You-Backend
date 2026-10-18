@@ -1,0 +1,15 @@
+.env
+.env.*
+venv/
+__pycache__/
+*.py[cod]
+tests/
+.pytest_cache/
+.git/
+.railway/
+*service-account*.json
+*firebase-adminsdk*.json
+serviceAccountKey.json
+credentials.json
+*.pem
+*.key
