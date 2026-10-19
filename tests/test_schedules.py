@@ -143,11 +143,31 @@ class ScheduleApiTests(unittest.TestCase):
 
     def test_invalid_changes_do_not_modify_saved_activity(self):
         created = self.create()
-        for changes in ({"title": " "}, {"title": None}, {"starts_at": "invalid"}, {"starts_at": "2026-10-18T07:00:00"}, {"category": "Other"}, {"completed": None}, {}, {"notes": "x" * 1001}):
+        for changes in ({"title": " "}, {"title": None}, {"starts_at": "invalid"}, {"starts_at": "2026-10-18T07:00:00"}, {"category": " "}, {"category": "x" * 61}, {"completed": None}, {}, {"notes": "x" * 1001}):
             with self.subTest(changes=changes):
                 response = self.client.patch(f"/api/schedules/{created['id']}", json=changes)
                 self.assertEqual(response.status_code, 422, response.text)
         self.assertEqual(self.client.get("/api/schedules").json()[0]["title"], created["title"])
+
+    def test_custom_categories_survive_reconnect_and_are_account_scoped(self):
+        path = "/api/schedules/categories"
+        response = self.client.post(path, json={"name": "  Family  time  "})
+        self.assertEqual(response.status_code, 201, response.text)
+        self.assertEqual(response.json(), "Family time")
+        self.assertEqual(self.client.post(path, json={"name": "family TIME"}).json(), "Family time")
+        self.client.portal.call(database.close_mongo_connection)
+        self.client.portal.call(database.connect_to_mongo)
+        self.assertEqual(self.client.get(path).json(), ["Family time"])
+        created = self.create(category="Family time")
+        self.assertEqual(created["category"], "Family time")
+        changed = self.client.patch(f"/api/schedules/{created['id']}", json={"category": "Travel"})
+        self.assertEqual(changed.status_code, 200, changed.text)
+        self.assertEqual(changed.json()["category"], "Travel")
+        self.user_id = "test-user-b"
+        self.assertEqual(self.client.get(path).json(), [])
+        self.assertEqual(self.client.post(path, json={"name": "family time"}).json(), "family time")
+        self.user_id = "test-user-a"
+        self.assertEqual(self.client.get(path).json(), ["Family time"])
 
     def test_database_outage_returns_retryable_message(self):
         with patch("app.services.schedule_service.get_collection", side_effect=ConnectionFailure("test")):

@@ -1,16 +1,16 @@
 from datetime import datetime
-from enum import StrEnum
+from typing import Annotated
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validator
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, StringConstraints, model_validator
 
 
-class ScheduleCategory(StrEnum):
-    WORKOUT = "Workout"
-    WORK = "Work"
-    FOOD = "Food"
-    STUDY = "Study"
-    SOCIAL = "Social"
-    SLEEP = "Sleep"
+ScheduleCategory = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=60)]
+
+
+class ScheduleCategoryCreate(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    name: ScheduleCategory
 
 
 class ScheduleBase(BaseModel):

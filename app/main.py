@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pymongo.errors import PyMongoError
 
-from app.api.routes import document_ocr_router, food_analysis_router, life_items_router, market_router, schedules_router
+from app.api.routes import document_ocr_router, family_router, food_analysis_router, life_items_router, market_router, schedules_router
 from app.core.config import settings
 from app.core.database import close_mongo_connection, connect_to_mongo
 
@@ -40,6 +40,7 @@ app.include_router(life_items_router, prefix=settings.api_v1_prefix)
 app.include_router(food_analysis_router, prefix=settings.api_v1_prefix)
 app.include_router(document_ocr_router, prefix=settings.api_v1_prefix)
 app.include_router(market_router, prefix=settings.api_v1_prefix)
+app.include_router(family_router, prefix=settings.api_v1_prefix)
 
 
 @app.exception_handler(PyMongoError)

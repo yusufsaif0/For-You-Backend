@@ -16,6 +16,7 @@ Railway deploys this service from the root `Dockerfile` and `railway.json`. When
 
 | Method | Path | Behavior |
 | --- | --- | --- |
+| GET / POST | `/api/schedules/categories` | Load or save the signed-in user's reusable custom schedule categories. Names are limited to 60 characters; repeated names reuse the existing category. Schedule create/update payloads also accept custom category names. |
 | POST | `/api/food/analyze` | Analyze a resized JPEG/PNG/WebP image with Gemini and return food items with estimated portions, calories, sugar, and fat. Requires server-side `GEMINI_API_KEY`. |
 | POST | `/api/documents/extract` | Extract visible fields from a confirmed PDF/JPEG/PNG/WebP document (maximum 6 MB); requires authentication and server-side `GEMINI_API_KEY`, with no backend file persistence. |
 | GET | `/api/market/quotes` | Return cached NIFTY 50, COMEX gold/silver futures converted to approximate INR weights, and update timestamps from Yahoo Finance. No provider key required. |

@@ -61,7 +61,11 @@ def require_user(
         raise HTTPException(status_code=401, detail="Your sign-in session is invalid or expired. Sign in again.", headers={"WWW-Authenticate": "Bearer"}) from None
     if not claims.get("uid") or not claims.get("email_verified", False):
         raise HTTPException(status_code=403, detail="Verify your email address before using the app.")
-    return {"uid": claims["uid"], "email": claims.get("email")}
+    return {
+        "uid": claims["uid"],
+        "email": claims.get("email"),
+        "display_name": claims.get("name"),
+    }
 
 
 def reset_auth_cache_for_tests() -> None:

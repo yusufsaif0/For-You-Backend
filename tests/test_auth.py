@@ -13,7 +13,14 @@ from app.main import app
 class AuthenticationTests(unittest.TestCase):
     def test_planner_api_rejects_requests_without_bearer_token(self):
         client = TestClient(app)
-        for path in ("/api/schedules", "/api/life-items?kind=meal", "/api/food/analyze"):
+        for path in (
+            "/api/schedules",
+            "/api/life-items?kind=meal",
+            "/api/food/analyze",
+            "/api/family",
+            "/api/family/tasks",
+            "/api/family/documents",
+        ):
             with self.subTest(path=path):
                 response = client.get(path) if "food" not in path else client.post(path, json={})
                 self.assertEqual(response.status_code, 401, response.text)
@@ -22,7 +29,7 @@ class AuthenticationTests(unittest.TestCase):
         credentials = HTTPAuthorizationCredentials(scheme="Bearer", credentials="test-token")
         with patch("app.core.auth._firebase_app", return_value=object()), \
              patch("app.core.auth.auth.verify_id_token", return_value={"uid": "user-123", "email_verified": True}):
-            self.assertEqual(require_user(credentials), {"uid": "user-123", "email": None})
+            self.assertEqual(require_user(credentials), {"uid": "user-123", "email": None, "display_name": None})
 
         with patch("app.core.auth._firebase_app", return_value=object()), \
              patch("app.core.auth.auth.verify_id_token", return_value={"uid": "user-123", "email_verified": False}):
