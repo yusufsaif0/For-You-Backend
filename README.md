@@ -12,6 +12,8 @@ Schedule, life-item, food-analysis, and document-extraction endpoints require a 
 
 `POST /api/documents/extract` accepts a PDF/JPEG/PNG/WebP up to 6 MB and forwards it to Google Gemini only after the user confirms in the app. The backend does not persist the document or extracted fields. Google processes submitted content under its service terms; extracted fields remain in the user's encrypted on-device vault.
 
+The application assistant (`/api/applications/*`) discovers application guidance online and presents sources for user review. Chat and document processing require explicit consent and are disabled unless `APPLICATIONS_PERSONAL_DATA_ENABLED=true` and `GEMINI_API_KEY` is configured. Keep this disabled until confirming active Gemini billing and reviewing applicable data-processing terms. Drafts are encrypted in the device vault; the backend does not persist drafts or automate portal submissions. The mobile app can best-effort fill ordinary form fields in a local in-app browser after the user confirms the host and selects values. Passwords, OTP/CAPTCHA, files and payments remain manual; standard form submissions require separate confirmation. Scripted portal flows may not be caught, and the assistant does not confirm submission or track approval/status.
+
 Railway deploys this service from the root `Dockerfile` and `railway.json`. When connecting this backend-only repository, leave the Railway root directory at `/`; do not set it to `/backend`. Add production values using Railway's secret variables; do not commit a `.env` file or Firebase service-account JSON. MongoDB Atlas network access should be restricted to the Railway service's static egress IP or private network.
 
 | Method | Path | Behavior |
@@ -19,6 +21,9 @@ Railway deploys this service from the root `Dockerfile` and `railway.json`. When
 | GET / POST | `/api/schedules/categories` | Load or save the signed-in user's reusable custom schedule categories. Names are limited to 60 characters; repeated names reuse the existing category. Schedule create/update payloads also accept custom category names. |
 | POST | `/api/food/analyze` | Analyze a resized JPEG/PNG/WebP image with Gemini and return food items with estimated portions, calories, sugar, and fat. Requires server-side `GEMINI_API_KEY`. |
 | POST | `/api/documents/extract` | Extract visible fields from a confirmed PDF/JPEG/PNG/WebP document (maximum 6 MB); requires authentication and server-side `GEMINI_API_KEY`, with no backend file persistence. |
+| GET | `/api/applications/capabilities` | Report whether the consent-gated application assistant is enabled; requires authentication. |
+| POST | `/api/applications/chat` | Research application requirements from public sources and prepare user-reviewed guidance; requires authentication, consent, `APPLICATIONS_PERSONAL_DATA_ENABLED=true`, and server-side `GEMINI_API_KEY`. |
+| POST | `/api/applications/extract` | Extract selected document fields after separate consent; requires authentication and the same application-assistant configuration. |
 | GET | `/api/market/quotes` | Return cached NIFTY 50, COMEX gold/silver futures converted to approximate INR weights, and update timestamps from Yahoo Finance. No provider key required. |
 
 All routes above except the public market quote route require a verified Firebase user. `/` and `/health` are public deployment health probes. Interactive API documentation is disabled in production.

@@ -16,6 +16,8 @@ class Settings:
     mongodb_database = os.getenv("DATABASE_NAME", "daily_life")
     gemini_api_key = os.getenv("GEMINI_API_KEY", "").strip()
     gemini_model = os.getenv("GEMINI_MODEL", "gemini-3.5-flash-lite").strip()
+    applications_gemini_model = os.getenv("APPLICATIONS_GEMINI_MODEL", gemini_model).strip()
+    applications_personal_data_enabled = os.getenv("APPLICATIONS_PERSONAL_DATA_ENABLED", "false").lower() == "true"
     firebase_project_id = os.getenv("FIREBASE_PROJECT_ID", "").strip()
     firebase_service_account_json = os.getenv("FIREBASE_SERVICE_ACCOUNT_JSON", "").strip()
     app_environment = os.getenv("APP_ENV", "development").strip().lower()
