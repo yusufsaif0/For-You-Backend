@@ -271,7 +271,13 @@ async def _plan_response(request: ApplicationChatRequest, evidence: dict | None)
     candidate = await _gemini(payload)
     try:
         data = json.loads(_candidate_text(candidate))
-        ApplicationScope.model_validate(data.get("scope", {}))
+        scope = data.get("scope", {})
+        if not isinstance(scope, dict):
+            raise ValueError("Missing application scope")
+        # Gemini may emit an empty enum value even when instructed to use "unknown".
+        if not isinstance(scope.get("service"), str) or not scope["service"].strip():
+            scope["service"] = "unknown"
+        data["scope"] = ApplicationScope.model_validate(scope).model_dump()
         if not isinstance(data.get("reply"), str):
             raise ValueError("Missing reply")
         return data

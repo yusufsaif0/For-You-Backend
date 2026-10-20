@@ -78,6 +78,23 @@ class ApplicationRouteTests(unittest.TestCase):
 
 
 class ApplicationAssistantTests(unittest.IsolatedAsyncioTestCase):
+    async def test_blank_model_service_is_normalized_to_unknown(self):
+        request = ApplicationChatRequest.model_validate(request_payload())
+        candidate = {
+            "content": {
+                "parts": [{
+                    "text": (
+                        '{"reply":"Namaste! What application do you need help with?",'
+                        '"scope":{"service":"","state":"","district":"","institution":"","session":""}}'
+                    ),
+                }],
+            },
+        }
+        with patch.object(application_assistant, "_gemini", new=AsyncMock(return_value=candidate)):
+            result = await application_assistant._plan_response(request, None)
+
+        self.assertEqual(result["scope"]["service"], "unknown")
+
     async def test_unverified_model_requirements_and_portal_are_discarded(self):
         from app.schemas.applications import ApplicationChatRequest
 
@@ -110,4 +127,3 @@ class ApplicationAssistantTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result.plan.fee.value, "Not verified")
         self.assertEqual(result.plan.deadline.value, "Not verified")
         self.assertEqual(result.plan.sources, [])
-
